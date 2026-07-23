@@ -94,7 +94,7 @@ class GroqProvider(LLMProvider):
     """
     name = "groq"
 
-    def __init__(self, model: str = "llama3-70b-8192", api_key: Optional[str] = None):
+    def __init__(self, model: str = "llama-3.3-70b-versatile", api_key: Optional[str] = None):
         from groq import Groq
 
         self.model = model
@@ -142,15 +142,31 @@ class OpenSourceProvider(LLMProvider):
         return resp.choices[0].message.content or ""
 
 
-# Lista de modelos compatíveis com a Groq (mantenha atualizada)
+# Lista atualizada de modelos compatíveis com a Groq (setembro 2025)
 GROQ_MODELS = {
-    "llama3-70b-8192",
-    "llama3-8b-8192",
-    "mixtral-8x7b-32768",
-    "gemma2-9b-it",
-    "gemma-7b-it",
+    # Meta Llama
+    "llama-3.3-70b-versatile",
     "llama-3.1-70b-versatile",
     "llama-3.1-8b-instant",
+    "llama4-scout-17b-16e",
+    "llama4-maverick-17b-128e",
+    # Mistral
+    "mixtral-8x7b-32768",
+    # Google
+    "gemma2-9b-it",
+    "gemma-7b-it",
+    # OpenAI OSS
+    "openai/gpt-oss-20b",
+    "openai/gpt-oss-120b",
+    # Qwen
+    "qwen/qwen3.6-27b",
+    "qwen/qwen3.5-14b",
+    # DeepSeek
+    "deepseek-r1-distill-llama-70b",
+    "deepseek-r1-distill-qwen-32b",
+    # Outros
+    "gemma3-12b-it",
+    "gemma3-27b-it",
 }
 
 
@@ -170,7 +186,7 @@ _PROVIDERS = {
     "openai": OpenAIProvider,
     "gemini": GeminiProvider,
     "google": GeminiProvider,
-    "groq": GroqProvider,          # <-- registro explícito (não usado no frontend)
+    "groq": GroqProvider,          # Agora registrado e visível no frontend
     "open_source": OpenSourceProvider,
     "opensource": OpenSourceProvider,
 }
@@ -182,9 +198,13 @@ def get_provider(name: Optional[str] = None, model: Optional[str] = None) -> LLM
         name = os.getenv("DEFAULT_PROVIDER", "claude")
     key = name.lower()
 
-    # Se o usuário escolheu "open_source" e o modelo é da Groq, usa GroqProvider
+    # Se o usuário escolheu "groq" diretamente, usa GroqProvider
+    if key == "groq":
+        return GroqProvider(model=model or "llama-3.3-70b-versatile")
+
+    # Fallback: se escolheu "open_source" e modelo é da Groq
     if key in ("open_source", "opensource") and _should_use_groq(model):
-        return GroqProvider(model=model or "llama3-70b-8192")
+        return GroqProvider(model=model or "llama-3.3-70b-versatile")
 
     cls = _PROVIDERS.get(key)
     if cls is None:
