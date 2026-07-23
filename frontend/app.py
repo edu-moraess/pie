@@ -1,7 +1,7 @@
 """
 frontend.app
 =============
-Interface Streamlit do Prompt Intelligence Engine 
+Interface Streamlit do Prompt Intelligence Engine — visual profissional e clean.
 """
 from __future__ import annotations
 
@@ -33,223 +33,118 @@ if "benchmark" not in st.session_state:
     st.session_state.benchmark = PromptBenchmark()
 if "session" not in st.session_state:
     st.session_state.session = None
-if "theme" not in st.session_state:
-    st.session_state.theme = "light"  # light ou dark
 
 # ==========================================================================
-# CSS – Tema claro/escuro com paleta Bradesco Asset
+# CSS – Tema claro profissional (fixo)
 # ==========================================================================
 
-def get_theme_css(theme: str) -> str:
-    if theme == "light":
-        return """
-        /* Light mode - Bradesco Asset */
-        .stApp {
-            background-color: #f0f2f5;
-            color: #2c3e50;
-        }
-        .main-header {
-            color: #003366;
-            font-weight: 600;
-        }
-        .card {
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-            padding: 1.8rem 2rem;
-            border: 1px solid #e4e7ec;
-        }
-        .btn-primary {
-            background: #003366;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            padding: 0.5rem 1.8rem;
-            font-weight: 500;
-            transition: background 0.2s;
-        }
-        .btn-primary:hover {
-            background: #004c99;
-        }
-        .btn-secondary {
-            background: #ffffff;
-            color: #003366;
-            border: 1px solid #003366;
-            border-radius: 8px;
-            padding: 0.5rem 1.8rem;
-        }
-        .btn-secondary:hover {
-            background: #eef5fa;
-        }
-        .pie-score {
-            color: #003366;
-            font-size: 2.8rem;
-            font-weight: 700;
-        }
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 0.2rem;
-            border-bottom: 2px solid #e4e7ec;
-        }
-        .stTabs [data-baseweb="tab"] {
-            background: transparent;
-            color: #5a6c7e;
-            border-radius: 0;
-            padding: 0.5rem 1rem;
-            border-bottom: 2px solid transparent;
-        }
-        .stTabs [data-baseweb="tab"][aria-selected="true"] {
-            color: #003366;
-            border-bottom: 2px solid #003366;
-        }
-        .stTextArea textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] {
-            background: #ffffff;
-            border: 1px solid #d0d7de;
-            border-radius: 8px;
-            color: #2c3e50;
-        }
-        .stTextArea textarea:focus, .stTextInput input:focus {
-            border-color: #003366;
-            box-shadow: 0 0 0 2px rgba(0,51,102,0.15);
-        }
-        .stButton button {
-            background: #ffffff;
-            color: #003366;
-            border: 1px solid #d0d7de;
-            border-radius: 8px;
-            padding: 0.4rem 1.2rem;
-        }
-        .stButton button:hover {
-            background: #f0f2f5;
-            border-color: #003366;
-        }
-        .stButton button[data-testid="baseButton-primary"] {
-            background: #003366;
-            color: #ffffff;
-            border: none;
-        }
-        .stButton button[data-testid="baseButton-primary"]:hover {
-            background: #004c99;
-        }
-        .env-badge {
-            background: #e4e7ec;
-            color: #2c3e50;
-            padding: 0.2rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-        }
-        .sidebar .sidebar-content {
-            background: #ffffff;
-            border-right: 1px solid #e4e7ec;
-        }
-        .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-            color: #003366;
-        }
-        """
-    else:  # dark
-        return """
-        /* Dark mode - Bradesco Asset invertido */
-        .stApp {
-            background-color: #121a24;
-            color: #e6edf3;
-        }
-        .main-header {
-            color: #66b5ff;
-        }
-        .card {
-            background: #1c2633;
-            border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.4);
-            padding: 1.8rem 2rem;
-            border: 1px solid #2d3a4a;
-        }
-        .btn-primary {
-            background: #0066b3;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            padding: 0.5rem 1.8rem;
-            font-weight: 500;
-        }
-        .btn-primary:hover {
-            background: #007acc;
-        }
-        .btn-secondary {
-            background: transparent;
-            color: #66b5ff;
-            border: 1px solid #66b5ff;
-            border-radius: 8px;
-            padding: 0.5rem 1.8rem;
-        }
-        .btn-secondary:hover {
-            background: #1c2a3a;
-        }
-        .pie-score {
-            color: #66b5ff;
-            font-size: 2.8rem;
-            font-weight: 700;
-        }
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 0.2rem;
-            border-bottom: 2px solid #2d3a4a;
-        }
-        .stTabs [data-baseweb="tab"] {
-            background: transparent;
-            color: #8b9aab;
-            border-radius: 0;
-            padding: 0.5rem 1rem;
-            border-bottom: 2px solid transparent;
-        }
-        .stTabs [data-baseweb="tab"][aria-selected="true"] {
-            color: #66b5ff;
-            border-bottom: 2px solid #66b5ff;
-        }
-        .stTextArea textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] {
-            background: #121a24;
-            border: 1px solid #2d3a4a;
-            border-radius: 8px;
-            color: #e6edf3;
-        }
-        .stTextArea textarea:focus, .stTextInput input:focus {
-            border-color: #66b5ff;
-            box-shadow: 0 0 0 2px rgba(102,181,255,0.2);
-        }
-        .stButton button {
-            background: transparent;
-            color: #e6edf3;
-            border: 1px solid #2d3a4a;
-            border-radius: 8px;
-            padding: 0.4rem 1.2rem;
-        }
-        .stButton button:hover {
-            background: #1c2633;
-            border-color: #66b5ff;
-        }
-        .stButton button[data-testid="baseButton-primary"] {
-            background: #0066b3;
-            color: #ffffff;
-            border: none;
-        }
-        .stButton button[data-testid="baseButton-primary"]:hover {
-            background: #007acc;
-        }
-        .env-badge {
-            background: #2d3a4a;
-            color: #8b9aab;
-            padding: 0.2rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-        }
-        .sidebar .sidebar-content {
-            background: #0f1722;
-            border-right: 1px solid #1c2633;
-        }
-        .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-            color: #66b5ff;
-        }
-        """
-
-# Aplica o CSS
-st.markdown(f"<style>{get_theme_css(st.session_state.theme)}</style>", unsafe_allow_html=True)
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #f0f2f5;
+        color: #2c3e50;
+    }
+    .main-header {
+        color: #003366;
+        font-weight: 600;
+    }
+    .card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        padding: 1.8rem 2rem;
+        border: 1px solid #e4e7ec;
+    }
+    .btn-primary {
+        background: #003366;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.8rem;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+    .btn-primary:hover {
+        background: #004c99;
+    }
+    .btn-secondary {
+        background: #ffffff;
+        color: #003366;
+        border: 1px solid #003366;
+        border-radius: 8px;
+        padding: 0.5rem 1.8rem;
+    }
+    .btn-secondary:hover {
+        background: #eef5fa;
+    }
+    .pie-score {
+        color: #003366;
+        font-size: 2.8rem;
+        font-weight: 700;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.2rem;
+        border-bottom: 2px solid #e4e7ec;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background: transparent;
+        color: #5a6c7e;
+        border-radius: 0;
+        padding: 0.5rem 1rem;
+        border-bottom: 2px solid transparent;
+    }
+    .stTabs [data-baseweb="tab"][aria-selected="true"] {
+        color: #003366;
+        border-bottom: 2px solid #003366;
+    }
+    .stTextArea textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] {
+        background: #ffffff;
+        border: 1px solid #d0d7de;
+        border-radius: 8px;
+        color: #2c3e50;
+    }
+    .stTextArea textarea:focus, .stTextInput input:focus {
+        border-color: #003366;
+        box-shadow: 0 0 0 2px rgba(0,51,102,0.15);
+    }
+    .stButton button {
+        background: #ffffff;
+        color: #003366;
+        border: 1px solid #d0d7de;
+        border-radius: 8px;
+        padding: 0.4rem 1.2rem;
+    }
+    .stButton button:hover {
+        background: #f0f2f5;
+        border-color: #003366;
+    }
+    .stButton button[data-testid="baseButton-primary"] {
+        background: #003366;
+        color: #ffffff;
+        border: none;
+    }
+    .stButton button[data-testid="baseButton-primary"]:hover {
+        background: #004c99;
+    }
+    .env-badge {
+        background: #e4e7ec;
+        color: #2c3e50;
+        padding: 0.2rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+    }
+    .sidebar .sidebar-content {
+        background: #ffffff;
+        border-right: 1px solid #e4e7ec;
+    }
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+        color: #003366;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ==========================================================================
 # Sidebar
@@ -264,18 +159,6 @@ with st.sidebar:
         ["Studio", "Biblioteca", "Versionamento", "Benchmark", "Memória"],
         label_visibility="collapsed",
     )
-
-    # Seletor de tema (claro/escuro)
-    theme_sel = st.selectbox(
-        "Tema",
-        ["Claro", "Escuro"],
-        index=0 if st.session_state.theme == "light" else 1,
-        label_visibility="collapsed",
-    )
-    if theme_sel == "Claro":
-        st.session_state.theme = "light"
-    else:
-        st.session_state.theme = "dark"
 
     st.divider()
     with st.expander("⚙️ Provedor & Modelo", expanded=False):
@@ -300,11 +183,9 @@ def _llm():
 # ==========================================================================
 
 if page == "Studio":
-    # Cabeçalho
     st.markdown("<h1 class='main-header'>🧠 Prompt Intelligence Engine</h1>", unsafe_allow_html=True)
     st.caption("Transforme uma ideia simples em um prompt profissional, avaliado e otimizado.")
 
-    # Card central
     with st.container():
         st.markdown("<div class='card'>", unsafe_allow_html=True)
         idea = st.text_area(
@@ -336,7 +217,6 @@ if page == "Studio":
     if session:
         st.divider()
 
-        # Destaque do score e prompt
         score = session.evaluation.score if session.evaluation else 0
         col_score, col_info = st.columns([1, 3])
         with col_score:
@@ -350,7 +230,6 @@ if page == "Studio":
             st.subheader("Prompt final")
             st.code(session.final_prompt, language="markdown", line_numbers=False)
 
-        # Abas para detalhes
         tab1, tab2, tab3, tab4 = st.tabs(["📊 Avaliação", "📂 Versões", "💾 Salvar", "🔍 Explicação"])
 
         with tab1:
