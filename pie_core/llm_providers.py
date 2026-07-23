@@ -6,8 +6,8 @@ PIE nunca precisem saber qual API está por trás. Cada provider expõe:
 
     generate(system: str, user: str) -> str
 
-As chaves de API são lidas de variáveis de ambiente (ver .env.example).
-Nunca hardcode chaves aqui.
+As chaves de API são lidas de variáveis de ambiente (ver .env.example) ou
+de st.secrets (via Streamlit). Nunca hardcode chaves aqui.
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ class AnthropicProvider(LLMProvider):
     name = "claude"
 
     def __init__(self, model: str = "claude-sonnet-4-6", api_key: Optional[str] = None):
-        import anthropic  # lazy import: só exige o pacote se este provider for usado
+        import anthropic
 
         self.model = model
         self.client = anthropic.Anthropic(api_key=api_key or os.getenv("ANTHROPIC_API_KEY"))
@@ -53,7 +53,7 @@ class OpenAIProvider(LLMProvider):
     name = "gpt"
 
     def __init__(self, model: str = "gpt-4.1", api_key: Optional[str] = None):
-        from openai import OpenAI  # lazy import
+        from openai import OpenAI
 
         self.model = model
         self.client = OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
@@ -74,10 +74,9 @@ class GeminiProvider(LLMProvider):
     name = "gemini"
 
     def __init__(self, model: str = "gemini-2.0-flash", api_key: Optional[str] = None):
-        import google.generativeai as genai  # lazy import
+        import google.generativeai as genai
 
         genai.configure(api_key=api_key or os.getenv("GOOGLE_API_KEY"))
-        self.model = genai.GenerativeModel(model, system_instruction=None)
         self._model_name = model
 
     def generate(self, system: str, user: str, max_tokens: int = 2000) -> str:
@@ -86,6 +85,31 @@ class GeminiProvider(LLMProvider):
         model = genai.GenerativeModel(self._model_name, system_instruction=system)
         resp = model.generate_content(user, generation_config={"max_output_tokens": max_tokens})
         return resp.text or ""
+
+
+class GroqProvider(LLMProvider):
+    """
+    Provedor específico para a API da Groq (modelos open-source como Llama, Mixtral).
+    Utiliza a SDK oficial da Groq.
+    """
+    name = "groq"
+
+    def __init__(self, model: str = "llama3-70b-8192", api_key: Optional[str] = None):
+        from groq import Groq
+
+        self.model = model
+        self.client = Groq(api_key=api_key or os.getenv("GROQ_API_KEY"))
+
+    def generate(self, system: str, user: str, max_tokens: int = 2000) -> str:
+        resp = self.client.chat.completions.create(
+            model=self.model,
+            max_tokens=max_tokens,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+        )
+        return resp.choices[0].message.content or ""
 
 
 class OpenSourceProvider(LLMProvider):
@@ -98,7 +122,7 @@ class OpenSourceProvider(LLMProvider):
     name = "open_source"
 
     def __init__(self, model: Optional[str] = None, base_url: Optional[str] = None, api_key: Optional[str] = None):
-        from openai import OpenAI  # lazy import — mesma SDK, endpoint diferente
+        from openai import OpenAI
 
         self.model = model or os.getenv("OPENSOURCE_MODEL", "llama3")
         self.client = OpenAI(
@@ -118,6 +142,27 @@ class OpenSourceProvider(LLMProvider):
         return resp.choices[0].message.content or ""
 
 
+# Lista de modelos compatíveis com a Groq (mantenha atualizada)
+GROQ_MODELS = {
+    "llama3-70b-8192",
+    "llama3-8b-8192",
+    "mixtral-8x7b-32768",
+    "gemma2-9b-it",
+    "gemma-7b-it",
+    "llama-3.1-70b-versatile",
+    "llama-3.1-8b-instant",
+}
+
+
+def _should_use_groq(model: Optional[str]) -> bool:
+    """Verifica se o modelo é compatível com a Groq e a chave está presente."""
+    if not model:
+        return False
+    if model not in GROQ_MODELS:
+        return False
+    return bool(os.getenv("GROQ_API_KEY"))
+
+
 _PROVIDERS = {
     "claude": AnthropicProvider,
     "anthropic": AnthropicProvider,
@@ -125,6 +170,7 @@ _PROVIDERS = {
     "openai": OpenAIProvider,
     "gemini": GeminiProvider,
     "google": GeminiProvider,
+    "groq": GroqProvider,          # <-- registro explícito (não usado no frontend)
     "open_source": OpenSourceProvider,
     "opensource": OpenSourceProvider,
 }
@@ -132,7 +178,14 @@ _PROVIDERS = {
 
 def get_provider(name: Optional[str] = None, model: Optional[str] = None) -> LLMProvider:
     """Factory central: retorna uma instância do provider pedido (ou o default do .env)."""
-    key = (name or os.getenv("DEFAULT_PROVIDER", "claude")).lower()
+    if name is None:
+        name = os.getenv("DEFAULT_PROVIDER", "claude")
+    key = name.lower()
+
+    # Se o usuário escolheu "open_source" e o modelo é da Groq, usa GroqProvider
+    if key in ("open_source", "opensource") and _should_use_groq(model):
+        return GroqProvider(model=model or "llama3-70b-8192")
+
     cls = _PROVIDERS.get(key)
     if cls is None:
         raise ValueError(f"Provider desconhecido: {key}. Opções: {list(_PROVIDERS)}")
