@@ -1,0 +1,1 @@
+"""Prompt Intelligence Engine (PIE) — núcleo de agentes, memória e orquestração."""
