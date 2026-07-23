@@ -2,6 +2,9 @@
 frontend.app
 =============
 Interface Streamlit do Prompt Intelligence Engine — visual profissional e clean.
+
+As chaves de API devem ser configuradas em .streamlit/secrets.toml
+ou no arquivo .env (para compatibilidade com o core).
 """
 from __future__ import annotations
 
@@ -127,13 +130,6 @@ st.markdown(
     .stButton button[data-testid="baseButton-primary"]:hover {
         background: #004c99;
     }
-    .env-badge {
-        background: #e4e7ec;
-        color: #2c3e50;
-        padding: 0.2rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.7rem;
-    }
     .sidebar .sidebar-content {
         background: #ffffff;
         border-right: 1px solid #e4e7ec;
@@ -170,10 +166,7 @@ with st.sidebar:
         model = st.text_input("Modelo (opcional)", placeholder="ex: claude-sonnet-4-6", label_visibility="collapsed")
         user_id = st.text_input("User ID", value="default", label_visibility="collapsed")
 
-    st.markdown(
-        f"<div class='env-badge'>🔑 API keys do .env</div>",
-        unsafe_allow_html=True,
-    )
+    # As chaves agora são lidas via st.secrets ou .env — não exibimos nada na UI.
 
 def _llm():
     return get_provider(provider, model or None)
