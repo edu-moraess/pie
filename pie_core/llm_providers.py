@@ -186,7 +186,7 @@ _PROVIDERS = {
     "openai": OpenAIProvider,
     "gemini": GeminiProvider,
     "google": GeminiProvider,
-    "groq": GroqProvider,          # Agora registrado e visível no frontend
+    "groq": GroqProvider,
     "open_source": OpenSourceProvider,
     "opensource": OpenSourceProvider,
 }
@@ -198,11 +198,9 @@ def get_provider(name: Optional[str] = None, model: Optional[str] = None) -> LLM
         name = os.getenv("DEFAULT_PROVIDER", "claude")
     key = name.lower()
 
-    # Se o usuário escolheu "groq" diretamente, usa GroqProvider
     if key == "groq":
         return GroqProvider(model=model or "llama-3.3-70b-versatile")
 
-    # Fallback: se escolheu "open_source" e modelo é da Groq
     if key in ("open_source", "opensource") and _should_use_groq(model):
         return GroqProvider(model=model or "llama-3.3-70b-versatile")
 
@@ -214,20 +212,27 @@ def get_provider(name: Optional[str] = None, model: Optional[str] = None) -> LLM
 
 
 # --------------------------------------------------------------------------
-# Helper: pedir JSON estruturado a um LLM e validar contra um schema Pydantic
+# Helper: extrair JSON de respostas do LLM (robusto)
 # --------------------------------------------------------------------------
 
 def _extract_json(text: str) -> str:
-    """Remove cercas de código markdown e texto solto ao redor do JSON."""
+    """
+    Remove cercas de código markdown e texto solto ao redor do JSON.
+    Retorna uma string contendo o JSON, ou string vazia se nada for encontrado.
+    """
+    if not text:
+        return ""
     text = text.strip()
+    # Tenta extrair bloco de código JSON
     fenced = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
     if fenced:
         return fenced.group(1).strip()
-    # fallback: pega do primeiro '{' ao último '}'
+    # Fallback: pega do primeiro '{' ao último '}'
     start, end = text.find("{"), text.rfind("}")
     if start != -1 and end != -1 and end > start:
         return text[start : end + 1]
-    return text
+    # Se não encontrou nada, retorna string vazia
+    return ""
 
 
 def call_structured(
@@ -255,9 +260,21 @@ def call_structured(
     for attempt in range(retries + 1):
         prompt = user if last_error is None else f"{user}\n\nSeu JSON anterior falhou a validação com este erro, corrija:\n{last_error}"
         raw = llm.generate(full_system, prompt, max_tokens=max_tokens)
+
+        # Verifica se a resposta é vazia
+        if not raw:
+            raise ValueError("O LLM retornou uma resposta vazia. Verifique a chave de API e o modelo.")
+
+        # Extrai o JSON
+        json_str = _extract_json(raw)
+        if not json_str:
+            # Se não encontrou JSON, registra o raw para depuração e lança erro
+            raise ValueError(f"Resposta do LLM não contém JSON válido: {raw[:200]}...")
+
         try:
-            data = json.loads(_extract_json(raw))
+            data = json.loads(json_str)
             return schema.model_validate(data)
         except (json.JSONDecodeError, ValidationError) as e:
             last_error = str(e)
+
     raise ValueError(f"Falha ao obter saída estruturada válida após {retries + 1} tentativas: {last_error}")
