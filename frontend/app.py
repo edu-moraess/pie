@@ -2,9 +2,6 @@
 frontend.app
 =============
 Interface Streamlit do Prompt Intelligence Engine — visual profissional e clean.
-
-As chaves de API devem ser configuradas em .streamlit/secrets.toml
-ou no arquivo .env (para compatibilidade com o core).
 """
 from __future__ import annotations
 
@@ -158,12 +155,17 @@ with st.sidebar:
 
     st.divider()
     with st.expander("⚙️ Provedor & Modelo", expanded=False):
+        # Opção "groq" agora está disponível explicitamente
         provider = st.selectbox(
             "Provider",
-            ["claude", "gpt", "gemini", "open_source"],
+            ["claude", "gpt", "gemini", "groq", "open_source"],
             label_visibility="collapsed",
         )
-        model = st.text_input("Modelo (opcional)", placeholder="ex: claude-sonnet-4-6", label_visibility="collapsed")
+        model = st.text_input(
+            "Modelo (opcional)",
+            placeholder="ex: claude-sonnet-4-6, llama-3.3-70b-versatile, gpt-4o...",
+            label_visibility="collapsed",
+        )
         user_id = st.text_input("User ID", value="default", label_visibility="collapsed")
 
     # As chaves agora são lidas via st.secrets ou .env — não exibimos nada na UI.
