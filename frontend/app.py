@@ -1,7 +1,7 @@
 """
 frontend.app
 =============
-Interface Streamlit do Prompt Intelligence Engine — visual clean e focado.
+Interface Streamlit do Prompt Intelligence Engine 
 """
 from __future__ import annotations
 
@@ -33,151 +33,228 @@ if "benchmark" not in st.session_state:
     st.session_state.benchmark = PromptBenchmark()
 if "session" not in st.session_state:
     st.session_state.session = None
+if "theme" not in st.session_state:
+    st.session_state.theme = "light"  # light ou dark
 
-# --------------------------------------------------------------------------
-# CSS – visual limpo, dark suave, sem exageros
-# --------------------------------------------------------------------------
-st.markdown(
-    """
-    <style>
-    /* Fundo mais escuro, mas não tão agressivo */
-    .stApp {
-        background-color: #0d1117;
-        color: #e6edf3;
-    }
-    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-    h1, h2, h3, h4 {
-        color: #58a6ff !important;
-        font-weight: 500;
-        letter-spacing: -0.02em;
-    }
-    .stMarkdown h1 { font-size: 2rem; }
-    .stMarkdown h2 { font-size: 1.3rem; }
-    .stMarkdown h3 { font-size: 1.1rem; }
+# ==========================================================================
+# CSS – Tema claro/escuro com paleta Bradesco Asset
+# ==========================================================================
 
-    /* Cards e painéis com fundo mais claro */
-    .pie-panel {
-        background: #161b22;
-        border: 1px solid #30363d;
-        border-radius: 12px;
-        padding: 1.2rem 1.5rem;
-        margin-bottom: 1rem;
-    }
+def get_theme_css(theme: str) -> str:
+    if theme == "light":
+        return """
+        /* Light mode - Bradesco Asset */
+        .stApp {
+            background-color: #f0f2f5;
+            color: #2c3e50;
+        }
+        .main-header {
+            color: #003366;
+            font-weight: 600;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 1.8rem 2rem;
+            border: 1px solid #e4e7ec;
+        }
+        .btn-primary {
+            background: #003366;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.8rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover {
+            background: #004c99;
+        }
+        .btn-secondary {
+            background: #ffffff;
+            color: #003366;
+            border: 1px solid #003366;
+            border-radius: 8px;
+            padding: 0.5rem 1.8rem;
+        }
+        .btn-secondary:hover {
+            background: #eef5fa;
+        }
+        .pie-score {
+            color: #003366;
+            font-size: 2.8rem;
+            font-weight: 700;
+        }
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 0.2rem;
+            border-bottom: 2px solid #e4e7ec;
+        }
+        .stTabs [data-baseweb="tab"] {
+            background: transparent;
+            color: #5a6c7e;
+            border-radius: 0;
+            padding: 0.5rem 1rem;
+            border-bottom: 2px solid transparent;
+        }
+        .stTabs [data-baseweb="tab"][aria-selected="true"] {
+            color: #003366;
+            border-bottom: 2px solid #003366;
+        }
+        .stTextArea textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] {
+            background: #ffffff;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            color: #2c3e50;
+        }
+        .stTextArea textarea:focus, .stTextInput input:focus {
+            border-color: #003366;
+            box-shadow: 0 0 0 2px rgba(0,51,102,0.15);
+        }
+        .stButton button {
+            background: #ffffff;
+            color: #003366;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            padding: 0.4rem 1.2rem;
+        }
+        .stButton button:hover {
+            background: #f0f2f5;
+            border-color: #003366;
+        }
+        .stButton button[data-testid="baseButton-primary"] {
+            background: #003366;
+            color: #ffffff;
+            border: none;
+        }
+        .stButton button[data-testid="baseButton-primary"]:hover {
+            background: #004c99;
+        }
+        .env-badge {
+            background: #e4e7ec;
+            color: #2c3e50;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        .sidebar .sidebar-content {
+            background: #ffffff;
+            border-right: 1px solid #e4e7ec;
+        }
+        .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+            color: #003366;
+        }
+        """
+    else:  # dark
+        return """
+        /* Dark mode - Bradesco Asset invertido */
+        .stApp {
+            background-color: #121a24;
+            color: #e6edf3;
+        }
+        .main-header {
+            color: #66b5ff;
+        }
+        .card {
+            background: #1c2633;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+            padding: 1.8rem 2rem;
+            border: 1px solid #2d3a4a;
+        }
+        .btn-primary {
+            background: #0066b3;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.8rem;
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            background: #007acc;
+        }
+        .btn-secondary {
+            background: transparent;
+            color: #66b5ff;
+            border: 1px solid #66b5ff;
+            border-radius: 8px;
+            padding: 0.5rem 1.8rem;
+        }
+        .btn-secondary:hover {
+            background: #1c2a3a;
+        }
+        .pie-score {
+            color: #66b5ff;
+            font-size: 2.8rem;
+            font-weight: 700;
+        }
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 0.2rem;
+            border-bottom: 2px solid #2d3a4a;
+        }
+        .stTabs [data-baseweb="tab"] {
+            background: transparent;
+            color: #8b9aab;
+            border-radius: 0;
+            padding: 0.5rem 1rem;
+            border-bottom: 2px solid transparent;
+        }
+        .stTabs [data-baseweb="tab"][aria-selected="true"] {
+            color: #66b5ff;
+            border-bottom: 2px solid #66b5ff;
+        }
+        .stTextArea textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] {
+            background: #121a24;
+            border: 1px solid #2d3a4a;
+            border-radius: 8px;
+            color: #e6edf3;
+        }
+        .stTextArea textarea:focus, .stTextInput input:focus {
+            border-color: #66b5ff;
+            box-shadow: 0 0 0 2px rgba(102,181,255,0.2);
+        }
+        .stButton button {
+            background: transparent;
+            color: #e6edf3;
+            border: 1px solid #2d3a4a;
+            border-radius: 8px;
+            padding: 0.4rem 1.2rem;
+        }
+        .stButton button:hover {
+            background: #1c2633;
+            border-color: #66b5ff;
+        }
+        .stButton button[data-testid="baseButton-primary"] {
+            background: #0066b3;
+            color: #ffffff;
+            border: none;
+        }
+        .stButton button[data-testid="baseButton-primary"]:hover {
+            background: #007acc;
+        }
+        .env-badge {
+            background: #2d3a4a;
+            color: #8b9aab;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        .sidebar .sidebar-content {
+            background: #0f1722;
+            border-right: 1px solid #1c2633;
+        }
+        .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+            color: #66b5ff;
+        }
+        """
 
-    /* Score grande e limpo */
-    .pie-score {
-        font-size: 2.8rem;
-        font-weight: 600;
-        line-height: 1;
-    }
+# Aplica o CSS
+st.markdown(f"<style>{get_theme_css(st.session_state.theme)}</style>", unsafe_allow_html=True)
 
-    /* Inputs e textareas */
-    .stTextArea textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] {
-        background-color: #0d1117 !important;
-        color: #e6edf3 !important;
-        border: 1px solid #30363d !important;
-        border-radius: 8px !important;
-    }
-    .stTextArea textarea:focus, .stTextInput input:focus {
-        border-color: #58a6ff !important;
-        box-shadow: 0 0 0 2px rgba(88,166,255,0.2) !important;
-    }
+# ==========================================================================
+# Sidebar
+# ==========================================================================
 
-    /* Botões */
-    .stButton button {
-        background: #21262d;
-        color: #c9d1d9;
-        border: 1px solid #30363d;
-        border-radius: 8px;
-        padding: 0.4rem 1.2rem;
-        font-weight: 500;
-        transition: all 0.15s;
-    }
-    .stButton button:hover {
-        background: #30363d;
-        border-color: #58a6ff;
-        color: #ffffff;
-    }
-    .stButton button[data-testid="baseButton-primary"] {
-        background: #238636;
-        border-color: #238636;
-        color: #fff;
-    }
-    .stButton button[data-testid="baseButton-primary"]:hover {
-        background: #2ea043;
-        border-color: #2ea043;
-    }
-
-    /* Abas mais discretas */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 0.5rem;
-    }
-    .stTabs [data-baseweb="tab"] {
-        background: transparent;
-        color: #8b949e;
-        border-radius: 6px;
-        padding: 0.3rem 0.8rem;
-        font-weight: 400;
-    }
-    .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background: #21262d;
-        color: #f0f6fc;
-    }
-
-    /* Expanders com título menor */
-    .streamlit-expanderHeader {
-        font-size: 0.9rem;
-        color: #8b949e;
-    }
-
-    /* Sidebar mais clean */
-    section[data-testid="stSidebar"] {
-        background-color: #0d1117;
-        border-right: 1px solid #21262d;
-    }
-    section[data-testid="stSidebar"] .css-1d391kg {
-        padding-top: 1rem;
-    }
-
-    /* Código com fonte monoespaçada */
-    code, .stCodeBlock {
-        font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
-        font-size: 0.85rem;
-    }
-
-    /* Métricas */
-    .stMetric {
-        background: #161b22;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
-    }
-    .stMetric label {
-        color: #8b949e !important;
-        font-weight: 400 !important;
-    }
-    .stMetric .stMetricValue {
-        color: #f0f6fc !important;
-        font-weight: 500 !important;
-    }
-
-    /* Badge de .env */
-    .env-badge {
-        display: inline-block;
-        background: #21262d;
-        color: #8b949e;
-        font-size: 0.65rem;
-        padding: 0.15rem 0.6rem;
-        border-radius: 12px;
-        border: 1px solid #30363d;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# --------------------------------------------------------------------------
-# Sidebar – mais compacta
-# --------------------------------------------------------------------------
 with st.sidebar:
     st.markdown("### 🧠 PIE")
     st.caption("Prompt Intelligence Engine")
@@ -188,7 +265,19 @@ with st.sidebar:
         label_visibility="collapsed",
     )
 
-    # Configurações de IA ocultas por padrão (menos poluição)
+    # Seletor de tema (claro/escuro)
+    theme_sel = st.selectbox(
+        "Tema",
+        ["Claro", "Escuro"],
+        index=0 if st.session_state.theme == "light" else 1,
+        label_visibility="collapsed",
+    )
+    if theme_sel == "Claro":
+        st.session_state.theme = "light"
+    else:
+        st.session_state.theme = "dark"
+
+    st.divider()
     with st.expander("⚙️ Provedor & Modelo", expanded=False):
         provider = st.selectbox(
             "Provider",
@@ -203,19 +292,21 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-
 def _llm():
     return get_provider(provider, model or None)
 
+# ==========================================================================
+# PÁGINA: Studio (principal)
+# ==========================================================================
 
-# --------------------------------------------------------------------------
-# PÁGINA: Studio (principal, mais limpa)
-# --------------------------------------------------------------------------
 if page == "Studio":
-    st.title("🧠 Prompt Intelligence Engine")
+    # Cabeçalho
+    st.markdown("<h1 class='main-header'>🧠 Prompt Intelligence Engine</h1>", unsafe_allow_html=True)
     st.caption("Transforme uma ideia simples em um prompt profissional, avaliado e otimizado.")
 
+    # Card central
     with st.container():
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
         idea = st.text_area(
             "Descreva sua ideia",
             height=100,
@@ -225,6 +316,7 @@ if page == "Studio":
         col_btn, _ = st.columns([1, 4])
         with col_btn:
             run = st.button("▶ Processar", type="primary", use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
     if run and idea.strip():
         steps = ["Análise da intenção", "Construção do prompt", "Avaliação", "Otimização"]
@@ -244,11 +336,11 @@ if page == "Studio":
     if session:
         st.divider()
 
-        # ---- Destaque do score e prompt resumido ----
+        # Destaque do score e prompt
         score = session.evaluation.score if session.evaluation else 0
         col_score, col_info = st.columns([1, 3])
         with col_score:
-            color = "#3fb950" if score >= 80 else ("#d29922" if score >= 60 else "#f85149")
+            color = "#00a65a" if score >= 80 else ("#f39c12" if score >= 60 else "#e74c3c")
             st.markdown(f"<div class='pie-score' style='color:{color}'>{score}</div>", unsafe_allow_html=True)
             st.caption("Score / 100")
             st.progress(score / 100)
@@ -258,7 +350,7 @@ if page == "Studio":
             st.subheader("Prompt final")
             st.code(session.final_prompt, language="markdown", line_numbers=False)
 
-        # ---- Abas para detalhes ----
+        # Abas para detalhes
         tab1, tab2, tab3, tab4 = st.tabs(["📊 Avaliação", "📂 Versões", "💾 Salvar", "🔍 Explicação"])
 
         with tab1:
@@ -271,7 +363,6 @@ if page == "Studio":
 
         with tab2:
             if session.versions:
-                # Mostra versões básica, profissional, expert
                 cols = st.columns(3)
                 with cols[0]:
                     st.markdown("**Básica**")
@@ -298,13 +389,13 @@ if page == "Studio":
             with c1:
                 prompt_id = st.text_input("ID do prompt (para versionamento)", value=session.session_id[:8])
                 msg = st.text_input("Mensagem do commit", value="Versão gerada pelo PIE")
-                if st.button("Commitar versão"):
+                if st.button("💾 Commit versão"):
                     PromptRepo(prompt_id).commit(session.final_prompt, msg)
                     st.success("Commit registrado.")
             with c2:
                 cat = st.selectbox("Categoria", CATEGORIES)
-                title = st.text_input("Título na biblioteca", value=(session.intent.goal if session.intent else "Prompt PIE"))
-                if st.button("Adicionar à biblioteca"):
+                title = st.text_input("Título", value=(session.intent.goal if session.intent else "Prompt PIE"))
+                if st.button("📚 Adicionar à biblioteca"):
                     st.session_state.library.add(cat, title, session.final_prompt)
                     st.success("Adicionado à biblioteca.")
 
@@ -313,11 +404,12 @@ if page == "Studio":
             for step in session.reasoning_log:
                 st.markdown(f"**{step.step}**  \n{step.reasoning}")
 
-# --------------------------------------------------------------------------
-# PÁGINA: Biblioteca (simplificada)
-# --------------------------------------------------------------------------
+# ==========================================================================
+# PÁGINA: Biblioteca
+# ==========================================================================
+
 elif page == "Biblioteca":
-    st.title("📚 Biblioteca de Prompts")
+    st.markdown("<h1 class='main-header'>📚 Biblioteca de Prompts</h1>", unsafe_allow_html=True)
     cat_filter = st.selectbox("Filtrar por categoria", ["Todas"] + CATEGORIES)
     entries = st.session_state.library.list(None if cat_filter == "Todas" else cat_filter)
     if not entries:
@@ -326,11 +418,12 @@ elif page == "Biblioteca":
         with st.expander(f"[{e['category']}] {e['title']}"):
             st.code(e["prompt_text"], language="markdown")
 
-# --------------------------------------------------------------------------
-# PÁGINA: Versionamento (mantida)
-# --------------------------------------------------------------------------
+# ==========================================================================
+# PÁGINA: Versionamento
+# ==========================================================================
+
 elif page == "Versionamento":
-    st.title("🕘 Versionamento")
+    st.markdown("<h1 class='main-header'>🕘 Versionamento</h1>", unsafe_allow_html=True)
     prompt_id = st.text_input("ID do prompt")
     if prompt_id:
         repo = PromptRepo(prompt_id)
@@ -350,11 +443,12 @@ elif page == "Versionamento":
             if st.button("Comparar (diff)"):
                 st.code(repo.diff(a, b) or "(sem diferenças)", language="diff")
 
-# --------------------------------------------------------------------------
-# PÁGINA: Benchmark (mantida)
-# --------------------------------------------------------------------------
+# ==========================================================================
+# PÁGINA: Benchmark
+# ==========================================================================
+
 elif page == "Benchmark":
-    st.title("⚖️ Benchmark")
+    st.markdown("<h1 class='main-header'>⚖️ Benchmark</h1>", unsafe_allow_html=True)
     col_a, col_b = st.columns(2)
     with col_a:
         prompt_a = st.text_area("Prompt A", height=150)
@@ -373,11 +467,12 @@ elif page == "Benchmark":
             st.text_area("Saída B", result["output_b"], height=200)
         st.success(f"Vencedor: {result['winner']} — {result['rationale']}")
 
-# --------------------------------------------------------------------------
-# PÁGINA: Memória (mantida)
-# --------------------------------------------------------------------------
+# ==========================================================================
+# PÁGINA: Memória
+# ==========================================================================
+
 elif page == "Memória":
-    st.title("🧬 Memória")
+    st.markdown("<h1 class='main-header'>🧬 Memória</h1>", unsafe_allow_html=True)
     mem = st.session_state.memory_agent.get_user_memory(user_id)
     st.json(mem.model_dump(mode="json"))
     st.markdown("#### Ensinar preferências")
