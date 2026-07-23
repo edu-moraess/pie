@@ -32,13 +32,5 @@ chromadb>=0.5
 # HTTP & utils
 # ============================================
 httpx>=0.27
-tenacity>=8.2                # útil para retry em chamadas de API
-python-multipart>=0.0.9      # para uploads (caso necessário)
-
-# ============================================
-# Type checking / dev (opcional)
-# ============================================
-# mypy>=1.8
-# pytest>=8.0
-# black>=24.0
-# ruff>=0.3
+tenacity>=8.2
+python-multipart>=0.0.9
